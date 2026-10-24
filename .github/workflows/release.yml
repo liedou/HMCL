@@ -88,24 +88,25 @@ jobs:
       - name: Create GitHub release
         if: ${{ env.continue == 'true' }}
         run: |
+          # Fork releases use the checked-out default branch because GITHUB_TOKEN
+          # cannot target commits that are unreachable from the repository's branches.
           gh release create "${{ env.HMCL_TAG_NAME }}" \
             "HMCL-${{ env.HMCL_VERSION }}.exe" \
             "HMCL-${{ env.HMCL_VERSION }}.jar" \
             "HMCL-${{ env.HMCL_VERSION }}.sh" \
             "HMCL-${{ env.HMCL_VERSION }}.deb" \
-            --target "${{ env.HMCL_COMMIT_SHA }}" \
             --title "${{ env.HMCL_TAG_NAME }}" \
             --notes-file RELEASE_NOTE \
             --prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install git-cnb
-        if: ${{ env.continue == 'true' }}
+        if: ${{ env.continue == 'true' && github.repository_owner == 'HMCL-dev' }}
         run: go install "cnb.cool/looc/git-cnb@$GIT_CNB_VERSION"
         env:
           GIT_CNB_VERSION: '1.1.2'
       - name: Create CNB release
-        if: ${{ env.continue == 'true' }}
+        if: ${{ env.continue == 'true' && github.repository_owner == 'HMCL-dev' }}
         run: |
           echo "Uploading tags to CNB"
           git fetch --tags
